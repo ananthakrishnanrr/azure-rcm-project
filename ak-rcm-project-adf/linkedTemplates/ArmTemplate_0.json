@@ -1,0 +1,133 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ak-rcm-project-adf"
+		},
+		"ak_adls_ls_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ak_adls_ls'"
+		},
+		"ak_keyvault_ls_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://ak-rcm-project-kv.vault.azure.net/"
+		},
+		"ak_adls_ls_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://akrcmprojectsa.dfs.core.windows.net/"
+		},
+		"ak_rcm_sqlserver_ls_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "azrcmdb.database.windows.net"
+		},
+		"ak_rcm_sqlserver_ls_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "rcm-hospital-a"
+		},
+		"ak_rcm_sqlserver_ls_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "rcmadmin"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ak_keyvault_ls')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('ak_keyvault_ls_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/akazureIR')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "Central India",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 16,
+							"timeToLive": 5,
+							"cleanup": false,
+							"customProperties": []
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ak_adls_ls')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('ak_adls_ls_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('ak_adls_ls_accountKey')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "akazureIR",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/akazureIR')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ak_rcm_sqlserver_ls')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"server": "[parameters('ak_rcm_sqlserver_ls_properties_typeProperties_server')]",
+					"database": "[parameters('ak_rcm_sqlserver_ls_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('ak_rcm_sqlserver_ls_properties_typeProperties_userName')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "ak_keyvault_ls",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "akrcmsqlserver-password"
+					},
+					"alwaysEncryptedSettings": {
+						"alwaysEncryptedAkvAuthType": "ManagedIdentity"
+					}
+				},
+				"connectVia": {
+					"referenceName": "akazureIR",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/akazureIR')]",
+				"[concat(variables('factoryId'), '/linkedServices/ak_keyvault_ls')]"
+			]
+		}
+	]
+}

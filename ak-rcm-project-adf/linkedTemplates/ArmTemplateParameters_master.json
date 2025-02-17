@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "ak-rcm-project-adf"
+		},
+		"ak_adls_ls_accountKey": {
+			"value": ""
+		},
+		"ak_adls_ls_properties_typeProperties_url": {
+			"value": "https://akrcmprojectsa.dfs.core.windows.net/"
+		},
+		"ak_keyvault_ls_properties_typeProperties_baseUrl": {
+			"value": "https://ak-rcm-project-kv.vault.azure.net/"
+		},
+		"ak_rcm_sqlserver_ls_properties_typeProperties_server": {
+			"value": "azrcmdb.database.windows.net"
+		},
+		"ak_rcm_sqlserver_ls_properties_typeProperties_database": {
+			"value": "rcm-hospital-a"
+		},
+		"ak_rcm_sqlserver_ls_properties_typeProperties_userName": {
+			"value": "rcmadmin"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
