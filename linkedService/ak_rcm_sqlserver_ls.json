@@ -1,12 +1,16 @@
 {
 	"name": "ak_rcm_sqlserver_ls",
-	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
+		"parameters": {
+			"dbname": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "SqlServer",
 		"typeProperties": {
 			"server": "azrcmdb.database.windows.net",
-			"database": "rcm-hospital-a",
+			"database": "@{linkedService().dbname}",
 			"encrypt": "mandatory",
 			"trustServerCertificate": false,
 			"authenticationType": "SQL",
@@ -27,5 +31,6 @@
 			"referenceName": "akazureIR",
 			"type": "IntegrationRuntimeReference"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
 }
