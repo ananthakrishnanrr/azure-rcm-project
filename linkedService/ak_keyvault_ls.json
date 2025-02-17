@@ -1,0 +1,11 @@
+{
+	"name": "ak_keyvault_ls",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://ak-rcm-project-kv.vault.azure.net/"
+		}
+	}
+}

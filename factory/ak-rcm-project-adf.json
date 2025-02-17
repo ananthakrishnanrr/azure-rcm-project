@@ -1,0 +1,9 @@
+{
+	"name": "ak-rcm-project-adf",
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "98ceeb27-5e05-40e4-8a20-2f755854fc5b",
+		"tenantId": "e4b17ab4-6081-459e-a667-4c8ef9cb5271"
+	}
+}

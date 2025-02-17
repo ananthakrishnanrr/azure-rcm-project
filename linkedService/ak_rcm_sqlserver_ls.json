@@ -1,0 +1,31 @@
+{
+	"name": "ak_rcm_sqlserver_ls",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"server": "azrcmdb.database.windows.net",
+			"database": "rcm-hospital-a",
+			"encrypt": "mandatory",
+			"trustServerCertificate": false,
+			"authenticationType": "SQL",
+			"userName": "rcmadmin",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "ak_keyvault_ls",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "akrcmsqlserver-password"
+			},
+			"alwaysEncryptedSettings": {
+				"alwaysEncryptedAkvAuthType": "ManagedIdentity"
+			}
+		},
+		"connectVia": {
+			"referenceName": "akazureIR",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
