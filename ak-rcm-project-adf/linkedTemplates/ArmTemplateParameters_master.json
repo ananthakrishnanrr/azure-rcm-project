@@ -18,7 +18,7 @@
 			"value": "azrcmdb.database.windows.net"
 		},
 		"ak_rcm_sqlserver_ls_properties_typeProperties_database": {
-			"value": "rcm-hospital-a"
+			"value": "@{linkedService().dbname}"
 		},
 		"ak_rcm_sqlserver_ls_properties_typeProperties_userName": {
 			"value": "rcmadmin"
