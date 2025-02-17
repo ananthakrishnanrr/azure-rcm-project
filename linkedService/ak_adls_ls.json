@@ -1,0 +1,16 @@
+{
+	"name": "ak_adls_ls",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://akrcmprojectsa.dfs.core.windows.net/",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDE2OTdBQzA3LTY1QTYtNEY0RC04NEZCLUM2NEVGMDdGNjUwRV8zMDMwYWMxYS1mNjJmLTQ3ZjYtOTFkNS0yMzk1ODg2YjI4M2MiDQp9"
+		},
+		"connectVia": {
+			"referenceName": "akazureIR",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
