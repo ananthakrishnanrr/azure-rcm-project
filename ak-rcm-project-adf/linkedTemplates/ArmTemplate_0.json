@@ -177,7 +177,7 @@
 					"escapeChar": "\\",
 					"firstRowAsHeader": true,
 					"nullValue": "\"\"",
-					"quoteChar": ""
+					"quoteChar": "\""
 				},
 				"schema": []
 			},
@@ -236,7 +236,158 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Get ConfigFile",
+						"name": "ControlFileLookup",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "GetControlFIle",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 1,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "generic_adls2_delimiter_ds",
+								"type": "DatasetReference",
+								"parameters": {
+									"container_name": {
+										"value": "@pipeline().parameters.container_name",
+										"type": "Expression"
+									},
+									"file_path": {
+										"value": "@pipeline().parameters.file_path",
+										"type": "Expression"
+									},
+									"file_name": {
+										"value": "@activity('GetControlFIle').output.childItems[0].name",
+										"type": "Expression"
+									}
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "ControlFileLookup",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('ControlFileLookup').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Copy data1",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 2,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": true,
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "SqlServerSink",
+											"writeBehavior": "insert",
+											"sqlWriterUseTableLock": false
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "generic_adls2_delimiter_ds",
+											"type": "DatasetReference",
+											"parameters": {
+												"container_name": {
+													"value": "@item().Container",
+													"type": "Expression"
+												},
+												"file_path": {
+													"value": "@item().FilePath",
+													"type": "Expression"
+												},
+												"file_name": {
+													"value": "@item().FileName",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "generic_sqlserver_ds",
+											"type": "DatasetReference",
+											"parameters": {
+												"db_name": {
+													"value": "@item().DatabaseName",
+													"type": "Expression"
+												},
+												"schema_name": "dbo",
+												"table_name": {
+													"value": "@item().TableName",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "GetControlFIle",
 						"type": "GetMetadata",
 						"dependsOn": [],
 						"policy": {
@@ -279,72 +430,6 @@
 								"type": "DelimitedTextReadSettings"
 							}
 						}
-					},
-					{
-						"name": "check_file_Lookup_presence",
-						"type": "IfCondition",
-						"dependsOn": [
-							{
-								"activity": "Get ConfigFile",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"expression": {
-								"value": "@equals(activity('Get ConfigFile').output.exists,'true')",
-								"type": "Expression"
-							},
-							"ifTrueActivities": [
-								{
-									"name": "Lookup",
-									"type": "Lookup",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "DelimitedTextSource",
-											"storeSettings": {
-												"type": "AzureBlobFSReadSettings",
-												"recursive": true,
-												"enablePartitionDiscovery": false
-											},
-											"formatSettings": {
-												"type": "DelimitedTextReadSettings"
-											}
-										},
-										"dataset": {
-											"referenceName": "generic_adls2_delimiter_ds",
-											"type": "DatasetReference",
-											"parameters": {
-												"container_name": {
-													"value": "@pipeline().parameters.container_name",
-													"type": "Expression"
-												},
-												"file_path": {
-													"value": "@pipeline().parameters.file_path",
-													"type": "Expression"
-												},
-												"file_name": {
-													"value": "@activity('Get ConfigFile').output.itemName",
-													"type": "Expression"
-												}
-											}
-										},
-										"firstRowOnly": false
-									}
-								}
-							]
-						}
 					}
 				],
 				"policy": {
@@ -352,19 +437,22 @@
 				},
 				"parameters": {
 					"container_name": {
-						"type": "String"
+						"type": "String",
+						"defaultValue": "raw-data-for-sql-database"
 					},
 					"file_path": {
-						"type": "String"
+						"type": "String",
+						"defaultValue": "Lookup"
 					},
 					"file_name": {
-						"type": "String"
+						"type": "string"
 					}
 				},
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/generic_adls2_delimiter_ds')]"
+				"[concat(variables('factoryId'), '/datasets/generic_adls2_delimiter_ds')]",
+				"[concat(variables('factoryId'), '/datasets/generic_sqlserver_ds')]"
 			]
 		}
 	]
