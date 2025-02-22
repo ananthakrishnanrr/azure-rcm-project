@@ -78,6 +78,8 @@
 						{
 							"name": "CopyData",
 							"type": "Copy",
+							"state": "Inactive",
+							"onInactiveMarkAs": "Succeeded",
 							"dependsOn": [],
 							"policy": {
 								"timeout": "0.12:00:00",
@@ -153,11 +155,15 @@
 							]
 						},
 						{
-							"name": "If Condition1",
+							"name": "CheckIsActive",
 							"type": "IfCondition",
 							"dependsOn": [],
 							"userProperties": [],
 							"typeProperties": {
+								"expression": {
+									"value": "@equals(item().IsActive,'0')",
+									"type": "Expression"
+								},
 								"ifTrueActivities": [
 									{
 										"name": "Copy data1",
