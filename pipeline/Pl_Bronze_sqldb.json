@@ -93,7 +93,8 @@
 								"type": "Expression"
 							}
 						}
-					}
+					},
+					"firstRowOnly": false
 				}
 			},
 			{
@@ -110,7 +111,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('ReadConfigFile').output",
+						"value": "@activity('ReadConfigFile').output.value",
 						"type": "Expression"
 					},
 					"isSequential": true,
