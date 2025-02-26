@@ -1,0 +1,51 @@
+{
+	"name": "DeltaLakeDS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDatabricksDeltaLakels",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"database": {
+				"type": "string"
+			},
+			"tablename": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureDatabricksDeltaLakeDataset",
+		"typeProperties": {
+			"database": {
+				"value": "@dataset().database",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().tablename",
+				"type": "Expression"
+			}
+		},
+		"schema": [
+			{
+				"name": "data_source",
+				"type": "string"
+			},
+			{
+				"name": "tablename",
+				"type": "string"
+			},
+			{
+				"name": "numberofrowscopied",
+				"type": "integer"
+			},
+			{
+				"name": "watermarkcolumnname",
+				"type": "string"
+			},
+			{
+				"name": "loaddate",
+				"type": "timestamp"
+			}
+		]
+	}
+}
