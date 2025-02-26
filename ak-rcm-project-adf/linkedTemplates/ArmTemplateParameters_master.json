@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "ak-rcm-project-adf"
 		},
+		"AzureDatabricksDeltaLakels_accessToken": {
+			"value": ""
+		},
 		"ak_adls_ls_accountKey": {
 			"value": ""
 		},

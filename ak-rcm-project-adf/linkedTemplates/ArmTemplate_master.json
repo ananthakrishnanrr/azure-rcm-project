@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "ak-rcm-project-adf"
 		},
+		"AzureDatabricksDeltaLakels_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'AzureDatabricksDeltaLakels'"
+		},
 		"ak_adls_ls_accountKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ak_adls_ls'"
@@ -57,6 +61,9 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"AzureDatabricksDeltaLakels_accessToken": {
+						"value": "[parameters('AzureDatabricksDeltaLakels_accessToken')]"
 					},
 					"ak_adls_ls_accountKey": {
 						"value": "[parameters('ak_adls_ls_accountKey')]"

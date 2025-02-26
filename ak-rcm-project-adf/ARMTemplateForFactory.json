@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "ak-rcm-project-adf"
 		},
+		"AzureDatabricksDeltaLakels_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'AzureDatabricksDeltaLakels'"
+		},
 		"ak_adls_ls_accountKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ak_adls_ls'"
@@ -356,6 +360,62 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DeltaLakeDS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksDeltaLakels",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"database": {
+						"type": "string"
+					},
+					"tablename": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureDatabricksDeltaLakeDataset",
+				"typeProperties": {
+					"database": {
+						"value": "@dataset().database",
+						"type": "Expression"
+					},
+					"table": {
+						"value": "@dataset().tablename",
+						"type": "Expression"
+					}
+				},
+				"schema": [
+					{
+						"name": "data_source",
+						"type": "string"
+					},
+					{
+						"name": "tablename",
+						"type": "string"
+					},
+					{
+						"name": "numberofrowscopied",
+						"type": "integer"
+					},
+					{
+						"name": "watermarkcolumnname",
+						"type": "string"
+					},
+					{
+						"name": "loaddate",
+						"type": "timestamp"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDatabricksDeltaLakels')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/generic_adls2_delimiter_ds')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -449,6 +509,24 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ak_rcm_sqlserver_ls')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDatabricksDeltaLakels')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricksDeltaLake",
+				"typeProperties": {
+					"domain": "https://adb-656555832178973.13.azuredatabricks.net",
+					"clusterId": "0226-060203-lwc8hbju",
+					"accessToken": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDatabricksDeltaLakels_accessToken')]"
+					}
+				}
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ak_adls_ls')]",
