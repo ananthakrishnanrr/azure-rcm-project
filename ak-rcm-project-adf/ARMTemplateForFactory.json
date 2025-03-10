@@ -164,7 +164,14 @@
 								{
 									"name": "If Condition1",
 									"type": "IfCondition",
-									"dependsOn": [],
+									"dependsOn": [
+										{
+											"activity": "fileexists",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
 									"userProperties": [],
 									"typeProperties": {
 										"expression": {
@@ -246,8 +253,86 @@
 														}
 													}
 												]
+											},
+											{
+												"name": "AuditLog",
+												"type": "Lookup",
+												"dependsOn": [
+													{
+														"activity": "CopyData",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "AzureDatabricksDeltaLakeSource",
+														"query": {
+															"value": "@concat('insert into audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,loaddate) values (''',item().datasource,''',''',item().tablename,''',''',activity('CopyData').output.rowscopied,''',''',item().watermark,''',''',utcNow(),''')')",
+															"type": "Expression"
+														}
+													},
+													"dataset": {
+														"referenceName": "DeltaLakeDS",
+														"type": "DatasetReference",
+														"parameters": {
+															"database": "audit",
+															"tablename": "load_logs"
+														}
+													}
+												}
 											}
 										]
+									}
+								},
+								{
+									"name": "fileexists",
+									"type": "GetMetadata",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "generic_adls2_parquet_DS",
+											"type": "DatasetReference",
+											"parameters": {
+												"container_name": "bronze",
+												"file_path": {
+													"value": "@concat(item().targetpath,'/archive/',formatDateTime(utcNow(),'yyyy'),'/',formatDateTime(utcNow(),'mm'),'/',formatDateTime(utcNow(),'dd'))",
+													"type": "Expression"
+												},
+												"file_name": {
+													"value": "@split(item().tablename,'.')[1]",
+													"type": "Expression"
+												}
+											}
+										},
+										"fieldList": [
+											"exists"
+										],
+										"storeSettings": {
+											"type": "AzureBlobFSReadSettings",
+											"recursive": true,
+											"enablePartitionDiscovery": false
+										},
+										"formatSettings": {
+											"type": "ParquetReadSettings"
+										}
 									}
 								}
 							]
@@ -274,8 +359,9 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/generic_adls2_delimiter_ds')]",
+				"[concat(variables('factoryId'), '/datasets/generic_adls2_parquet_DS')]",
 				"[concat(variables('factoryId'), '/datasets/generic_sqlserver_ds')]",
-				"[concat(variables('factoryId'), '/datasets/generic_adls2_parquet_DS')]"
+				"[concat(variables('factoryId'), '/datasets/DeltaLakeDS')]"
 			]
 		},
 		{
