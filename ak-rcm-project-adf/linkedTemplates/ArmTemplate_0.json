@@ -421,7 +421,7 @@
 							"isSequential": true,
 							"activities": [
 								{
-									"name": "If Condition1",
+									"name": "checkFileExist",
 									"type": "IfCondition",
 									"dependsOn": [
 										{
@@ -439,7 +439,7 @@
 										},
 										"ifTrueActivities": [
 											{
-												"name": "CopyData",
+												"name": "MoveFile",
 												"type": "Copy",
 												"dependsOn": [],
 												"policy": {
@@ -492,7 +492,7 @@
 																"type": "Expression"
 															},
 															"file_name": {
-																"value": "@split(item().tablename,'.')[1]",
+																"value": "@concat(split(item().tablename,'.')[1],split(pipeline().parameters.business_date,'-')[0],split(pipeline().parameters.business_date,'-')[1],split(pipeline().parameters.business_date,'-')[2])",
 																"type": "Expression"
 															}
 														}
@@ -517,11 +517,11 @@
 												]
 											},
 											{
-												"name": "Delete1",
+												"name": "DeleteFile",
 												"type": "Delete",
 												"dependsOn": [
 													{
-														"activity": "CopyData",
+														"activity": "MoveFile",
 														"dependencyConditions": [
 															"Succeeded"
 														]
@@ -545,7 +545,10 @@
 																"value": "@item().targetpath",
 																"type": "Expression"
 															},
-															"file_name": "@split(item().tablename,'.')[1]"
+															"file_name": {
+																"value": "@concat(split(item().tablename,'.')[1],split(pipeline().parameters.business_date,'-')[0],split(pipeline().parameters.business_date,'-')[1],split(pipeline().parameters.business_date,'-')[2])",
+																"type": "Expression"
+															}
 														}
 													},
 													"enableLogging": false,
@@ -582,7 +585,7 @@
 													"type": "Expression"
 												},
 												"file_name": {
-													"value": "@split(item().tablename,'.')[1]",
+													"value": "@concat(split(item().tablename,'.')[1],split(pipeline().parameters.business_date,'-')[0],split(pipeline().parameters.business_date,'-')[1],split(pipeline().parameters.business_date,'-')[2])",
 													"type": "Expression"
 												}
 											}
@@ -601,11 +604,11 @@
 									}
 								},
 								{
-									"name": "If Condition2",
+									"name": "fullLoadCondition",
 									"type": "IfCondition",
 									"dependsOn": [
 										{
-											"activity": "If Condition1",
+											"activity": "checkFileExist",
 											"dependencyConditions": [
 												"Succeeded"
 											]
@@ -614,7 +617,7 @@
 									"userProperties": [],
 									"typeProperties": {
 										"expression": {
-											"value": "@equals(item().loadtype,'Full')",
+											"value": "@and(equals(item().loadtype,'Full'),equals(item().is_active,'0'))",
 											"type": "Expression"
 										},
 										"ifTrueActivities": [
@@ -696,6 +699,44 @@
 														}
 													}
 												]
+											},
+											{
+												"name": "auditLog",
+												"type": "Lookup",
+												"dependsOn": [
+													{
+														"activity": "copyFullLoad",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "AzureDatabricksDeltaLakeSource",
+														"query": {
+															"value": "@concat('insert into load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,buss_date,loaddate) values(''',item().datasource,''',''',split(item().tablename,'.')[1],''',''',activity('copyFullLoad').output.rowscopied,''',''',item().watermark,''',''',pipeline().parameters.business_date,''',''',utcNow(),''')')",
+															"type": "Expression"
+														}
+													},
+													"dataset": {
+														"referenceName": "DeltaLakeDS",
+														"type": "DatasetReference",
+														"parameters": {
+															"database": "audit",
+															"tablename": "load_logs"
+														}
+													},
+													"firstRowOnly": false
+												}
 											}
 										]
 									}
@@ -730,7 +771,8 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/generic_adls2_delimiter_ds')]",
 				"[concat(variables('factoryId'), '/datasets/generic_adls2_parquet_DS')]",
-				"[concat(variables('factoryId'), '/datasets/generic_sqlserver_ds')]"
+				"[concat(variables('factoryId'), '/datasets/generic_sqlserver_ds')]",
+				"[concat(variables('factoryId'), '/datasets/DeltaLakeDS')]"
 			]
 		},
 		{
