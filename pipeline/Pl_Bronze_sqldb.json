@@ -344,7 +344,7 @@
 										]
 									},
 									{
-										"name": "auditLog",
+										"name": "auditLogFullLoad",
 										"type": "Lookup",
 										"dependsOn": [
 											{
@@ -367,6 +367,144 @@
 												"type": "AzureDatabricksDeltaLakeSource",
 												"query": {
 													"value": "@concat('insert into load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,buss_date,loaddate) values(''',item().datasource,''',''',split(item().tablename,'.')[1],''',''',activity('copyFullLoad').output.rowscopied,''',''',item().watermark,''',''',pipeline().parameters.business_date,''',''',utcNow(),''')')",
+													"type": "Expression"
+												}
+											},
+											"dataset": {
+												"referenceName": "DeltaLakeDS",
+												"type": "DatasetReference",
+												"parameters": {
+													"database": "audit",
+													"tablename": "load_logs"
+												}
+											},
+											"firstRowOnly": false
+										}
+									}
+								]
+							}
+						},
+						{
+							"name": "incrementalLoadCondition",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "fullLoadCondition",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@and(equals(item().loadtype,'Incremental'),equals(item().is_active,'0'))",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "copyIncrementalLoad",
+										"type": "Copy",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "SqlServerSource",
+												"sqlReaderQuery": {
+													"value": "@concat('select * from ',split(item().tablename,'.')[0],'.',split(item().tablename,'.')[1],' where ',item().watermark,'=','''',pipeline().parameters.business_date,'''')",
+													"type": "Expression"
+												},
+												"queryTimeout": "02:00:00",
+												"partitionOption": "None"
+											},
+											"sink": {
+												"type": "ParquetSink",
+												"storeSettings": {
+													"type": "AzureBlobFSWriteSettings"
+												},
+												"formatSettings": {
+													"type": "ParquetWriteSettings"
+												}
+											},
+											"enableStaging": false,
+											"translator": {
+												"type": "TabularTranslator",
+												"typeConversion": true,
+												"typeConversionSettings": {
+													"allowDataTruncation": true,
+													"treatBooleanAsNumber": false
+												}
+											}
+										},
+										"inputs": [
+											{
+												"referenceName": "generic_sqlserver_ds",
+												"type": "DatasetReference",
+												"parameters": {
+													"db_name": {
+														"value": "@item().database",
+														"type": "Expression"
+													},
+													"schema_name": {
+														"value": "@split(item().tablename,'.')[0]",
+														"type": "Expression"
+													},
+													"table_name": {
+														"value": "@split(item().tablename,'.')[1]",
+														"type": "Expression"
+													}
+												}
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "generic_adls2_parquet_DS",
+												"type": "DatasetReference",
+												"parameters": {
+													"container_name": "bronze",
+													"file_path": {
+														"value": "@item().targetpath",
+														"type": "Expression"
+													},
+													"file_name": {
+														"value": "@concat(split(item().tablename,'.')[1],'_',split(pipeline().parameters.business_date,'-')[0],split(pipeline().parameters.business_date,'-')[1],split(pipeline().parameters.business_date,'-')[2])",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									},
+									{
+										"name": "auditLogIncremental",
+										"type": "Lookup",
+										"dependsOn": [
+											{
+												"activity": "copyIncrementalLoad",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "AzureDatabricksDeltaLakeSource",
+												"query": {
+													"value": "@concat('insert into load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,buss_date,loaddate) values(''',item().datasource,''',''',split(item().tablename,'.')[1],''',''',activity('copyIncrementalLoad').output.rowscopied,''',''',item().watermark,''',''',pipeline().parameters.business_date,''',''',utcNow(),''')')",
 													"type": "Expression"
 												}
 											},
