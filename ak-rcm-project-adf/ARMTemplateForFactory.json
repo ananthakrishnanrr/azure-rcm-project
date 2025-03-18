@@ -410,7 +410,7 @@
 													"source": {
 														"type": "AzureDatabricksDeltaLakeSource",
 														"query": {
-															"value": "@concat('insert into load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,buss_date,loaddate) values(''',item().datasource,''',''',split(item().tablename,'.')[1],''',''',activity('copyFullLoad').output.rowscopied,''',''',item().watermark,''',''',pipeline().parameters.business_date,''',''',utcNow(),''')')",
+															"value": "@concat('insert into audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,buss_date,loaddate) values(''',item().datasource,''',''',split(item().tablename,'.')[1],''',''',activity('copyFullLoad').output.rowscopied,''',''',item().watermark,''',''',pipeline().parameters.business_date,''',''',utcNow(),''')')",
 															"type": "Expression"
 														}
 													},
@@ -548,7 +548,7 @@
 													"source": {
 														"type": "AzureDatabricksDeltaLakeSource",
 														"query": {
-															"value": "@concat('insert into load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,buss_date,loaddate) values(''',item().datasource,''',''',split(item().tablename,'.')[1],''',''',activity('copyIncrementalLoad').output.rowscopied,''',''',item().watermark,''',''',pipeline().parameters.business_date,''',''',utcNow(),''')')",
+															"value": "@concat('insert into audit.load_logs(data_source,tablename,numberofrowscopied,watermarkcolumnname,buss_date,loaddate) values(''',item().datasource,''',''',split(item().tablename,'.')[1],''',''',activity('copyIncrementalLoad').output.rowscopied,''',''',item().watermark,''',''',pipeline().parameters.business_date,''',''',utcNow(),''')')",
 															"type": "Expression"
 														}
 													},
